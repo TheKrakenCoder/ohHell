@@ -451,44 +451,43 @@ function mousePressed() {
   if (mouseX > 1500*m_s) return;
   if (!m_thisPlayer) return;
 
-  // check this player's cards
-  let foundCard = null;
+  // We only want one card selected at a time, for player cards.  Since cards can't overlap
+  // this code is fairly simple.  See Quest for Planet Nine for overlapping card logic.
+  let changedState = false;
+
+
   for (let card of m_thisPlayer.cards) {
     if (mouseX > card.x && mouseX < card.x+m_cw && mouseY > card.y && mouseY < card.y+m_ch) {
-      foundCard = card;
+      changedState = true;
+      card.selected = !card.selected;
+    } else {
+      if (card.selected) {
+        card.selected = false;
+        changedState = true;
+      } 
     }
-  }
-  // // let foundTableTaskCard = false;
-  // for (let card of m_taskCards) {
+  } 
+
+  // This is not really necessary since we don't show that other players' cards are highlighted.
+  if (changedState) update();
+
+  // // check this player's cards
+  // let foundCard = null;
+  // for (let card of m_thisPlayer.cards) {
   //   if (mouseX > card.x && mouseX < card.x+m_cw && mouseY > card.y && mouseY < card.y+m_ch) {
   //     foundCard = card;
-  //     // foundTableTaskCard = true;
-  //   }
-  // }
-  // for (let card of m_thisPlayer.taskCards) {
-  //   if (mouseX > card.x && mouseX < card.x+m_cw && mouseY > card.y && mouseY < card.y+m_ch) {
-  //     foundCard = card;
   //   }
   // }
 
-  if (foundCard) foundCard.selected = !foundCard.selected;
-  if (foundCard) update();
-  // if (foundTableTaskCard) update();
+  // if (foundCard) foundCard.selected = !foundCard.selected;
+  // if (foundCard) update();
 
-  // if we didn't click on a card, deselect all cards
-  if (!foundCard) {
-    const sel1 = m_thisPlayer.cards.filter(card => card.selected == true);
-    if (sel1.length > 0) for (let card of m_thisPlayer.cards) card.selected = false; 
-    if (sel1.length > 0) update();
-
-    // const sel2 = m_taskCards.filter(card => card.selected == true);
-    // if (sel2.length > 0) for (let card of m_taskCards) card.selected = false; 
-
-    // const sel3 = m_thisPlayer.taskCards.filter(card => card.selected == true);
-    // if (sel3.length > 0) for (let card of m_thisPlayer.taskCards) card.selected = false; 
-
-    // if (sel1 || sel2 || sel3) update();
-  }
+  // // if we didn't click on a card, deselect all cards
+  // if (!foundCard) {
+  //   const sel1 = m_thisPlayer.cards.filter(card => card.selected == true);
+  //   if (sel1.length > 0) for (let card of m_thisPlayer.cards) card.selected = false; 
+  //   if (sel1.length > 0) update();
+  // }
 
 }
 
