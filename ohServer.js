@@ -11,9 +11,12 @@
 // npm install socket.io@4.7.5 --save
 // node ohServer.js
 
-const MAX_PLAYERS = 4;
+// const MAX_PLAYERS = 4;
 
-let m_seatOrder = [0, 1, 2, 3];
+// let m_seatOrder = [0, 1, 2, 3];
+const MAX_PLAYERS = 7;
+
+let m_seatOrder = [0, 1, 2, 3, 4, 5, 6];
 let m_players = [];
 let m_decks = [];
 let m_message = "&nbsp";
@@ -85,13 +88,15 @@ io.on(
           break;
         }
       }
-      // data.seatPos = m_seatPos;
-      m_players.push(data);
-      console.log('start message: num players = ' + m_players.length)
-      // emit to the player who sent the message.  I'm not sure why is doesn't
-      // go to everyone like in the NodeExpressSocketLatest example
-      socket.emit('initPlayer', data);  
-      heartbeat();
+      if (m_players.length < MAX_PLAYERS) {
+        // data.seatPos = m_seatPos;
+        m_players.push(data);
+        console.log('start message: num players = ' + m_players.length)
+        // emit to the player who sent the message.  I'm not sure why is doesn't
+        // go to everyone like in the NodeExpressSocketLatest example
+        socket.emit('initPlayer', data);  
+        heartbeat();
+      }
     });
 
     //----------------------------------------------
