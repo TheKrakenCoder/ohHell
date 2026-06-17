@@ -25,7 +25,7 @@ let m_standalone = false;
 let m_currentRound = 0;
 let m_showLastTrick = false;
 let m_showScorecard = false;
-let m_buttonPlayCard, m_buttonTakeTrick;
+let m_buttonPlayCard, m_buttonUnplayCard, m_buttonTakeTrick;
 const BUTTON_DEAL = 0, BUTTON_CALC_SCORE = 1;
 let m_lastButtonPressed = BUTTON_CALC_SCORE;
 let m_warningMessage = "";
@@ -198,9 +198,9 @@ function setup() {
   // this player buttons
   m_buttonPlayCard = createNormalButton2("Play Card", 700, 650, m_bw, m_bh);
   m_buttonPlayCard.mousePressed(playSelectedCard);
-  let buttonUnplayCard = createNormalButton2("Unplay Card", 800, 650, m_bw, m_bh);
-  buttonUnplayCard.style('padding', '5px 0px');
-  buttonUnplayCard.mousePressed(unplaySelectedCard);
+  m_buttonUnplayCard = createNormalButton2("Unplay Card", 800, 650, m_bw, m_bh);
+  m_buttonUnplayCard.style('padding', '5px 0px');
+  m_buttonUnplayCard.mousePressed(unplaySelectedCard);
   m_buttonTakeTrick = createNormalButton2("Take Trick", 900, 650, m_bw, m_bh);
   m_buttonTakeTrick.mousePressed(takeTrick);
 
@@ -750,6 +750,7 @@ function draw() {
   if (m_showScorecard) showScorecard();
   else {
     m_buttonPlayCard.show();
+    m_buttonUnplayCard.show();
     m_buttonTakeTrick.show();
   }
 
@@ -759,6 +760,7 @@ function draw() {
 
 function showScorecard() {
   m_buttonPlayCard.hide();
+  m_buttonUnplayCard.hide();
   m_buttonTakeTrick.hide();
   let xs = 400*m_s, w = 800*m_s, h = 900*m_s;
   noStroke(); fill(200);
@@ -782,6 +784,7 @@ function showScorecard() {
   let totalScores = new Array(m_players.length).fill(0); 
   // since we prefill the bids and tricksTakens with 0s, we have one too many rounds
   for (let round = 0; round < numRounds-1; round++) {
+    stroke(0), fill(0);
     // figure out how many tricks were taken this round.  This is drawn on the left
     let tricksThisRound = 0;
     for (let player of m_players) tricksThisRound += player.tricksTakens[round];
@@ -792,8 +795,13 @@ function showScorecard() {
       if (m_players[i].bids[round] == m_players[i].tricksTakens[round]) score = (5 + m_players[i].bids[round]);
       else                                      score = -1*abs(m_players[i].bids[round]-m_players[i].tricksTakens[round]);
       totalScores[i] += score;
-      let str = '' + m_players[i].tricksTakens[round] + '/' + m_players[i].bids[round] + ' ' + score + '/' + totalScores[i];
+      // let str = '' + m_players[i].tricksTakens[round] + '/' + m_players[i].bids[round] + ' ' + score + '/' + totalScores[i];
+      let str = '' + m_players[i].tricksTakens[round] + '/' + m_players[i].bids[round] + ' ' + score + '/';
+      let tw = textWidth(str) + 3;
+      stroke(0), fill(0);
       text(str, xs+(i+1)*xoff, (round+2)*yoff);
+      stroke(0); fill(0, 255, 0);
+      text(totalScores[i], xs+(i+1)*xoff + tw, (round+2)*yoff);
     }
 
   }
