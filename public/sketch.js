@@ -322,10 +322,12 @@ function initPlayerToServer() {
 function createPlayersFromServerData(data) {
   console.log('player data = ' , data);
   
-  let playersTemp = [];
+  let playersTemp = []; 
+  let icnt = 0;
   for (p of data) {
     let player = new Player(p.seatPos, p.name);
     player.copyFromServerData(p);
+    player.seatPos = icnt++;   // this makes sure we always start at 0 and count up if someone drops
     playersTemp.push(player);
   }
   // sort the array by seatPos, so advancing and changing dealer (next hand) work properlu
