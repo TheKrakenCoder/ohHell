@@ -16,6 +16,8 @@
 // let m_seatOrder = [0, 1, 2, 3];
 const MAX_PLAYERS = 7;
 
+// Seat order really doesn't mean much in this game.  In createPlayersFromServerData() we
+// just set seatPos to the m_players index.
 let m_seatOrder = [0, 1, 2, 3, 4, 5, 6];
 let m_players = [];
 let m_decks = [];
