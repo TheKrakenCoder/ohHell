@@ -25,6 +25,7 @@ let m_standalone = false;
 let m_currentRound = 0;
 let m_showLastTrick = false;
 let m_showScorecard = false;
+let m_sortLowToHigh = true;
 let m_buttonPlayCard, m_buttonUnplayCard, m_buttonTakeTrick;
 const BUTTON_DEAL = 0, BUTTON_CALC_SCORE = 1;
 let m_lastButtonPressed = BUTTON_CALC_SCORE;
@@ -190,7 +191,15 @@ function setup() {
 
   let buttonShowScorecard = createNormalButton2("Score Card", 1550, 700, m_bw, m_bh);
   buttonShowScorecard.mousePressed(() => m_showScorecard = !m_showScorecard);
-
+  let buttonChangeSort = createNormalButton2("Sort", 1500, 750, m_bw, m_bh);
+  // buttonChangeSort.mousePressed(() => m_sortLowToHigh = !m_sortLowToHigh);
+  buttonChangeSort.mousePressed(() => {
+    m_sortLowToHigh = !m_sortLowToHigh;
+    for (let player of m_players) {
+      if (m_sortLowToHigh) player.cards.sort((a,b) => (a.color-b.color || a.value-b.value));
+      else                 player.cards.sort((a,b) => (a.color-b.color || b.value-a.value));
+    }
+  });
 
   let buttonUntakeTrick = createNormalButton2("Untake Trick", 1500, 850, m_bw*2, m_bh);
   buttonUntakeTrick.mousePressed(untakeTrick);
@@ -418,6 +427,11 @@ function update() {
   }
 }
 
+function resetServer() {
+  let data = {};
+  m_socket.emit('resetServer', data);
+}
+
 ////////////////////////////////////////////
 // GUI
 ////////////////////////////////////////////
@@ -510,6 +524,7 @@ function newHand(numCards = 7) {
   if (m_lastButtonPressed == BUTTON_DEAL) {
     m_warningMessage = "You may have forgotten to Calc Score.\nIf not, press Deal again."
     m_lastButtonPressed = BUTTON_CALC_SCORE;
+    // update();
     return;
   }
   m_warningMessage = "";
@@ -549,7 +564,8 @@ function newHand(numCards = 7) {
   }
 
   for (let player of m_players) {
-    player.cards.sort((a,b) => (a.color-b.color || a.value-b.value));
+    if (m_sortLowToHigh) player.cards.sort((a,b) => (a.color-b.color || a.value-b.value));
+    else                 player.cards.sort((a,b) => (a.color-b.color || b.value-a.value));
   }
 
   update();
@@ -584,7 +600,7 @@ function calcScore() {
   // set these defaults so that we don't end up with undefined before each players
   // sets a bid and takes a trick
   for (let player of m_players) {
-    player.bids.push(0);
+    player.bids.push(-1);
     player.tricksTakens.push(0);
   }
   update();
@@ -728,6 +744,9 @@ function draw() {
   // background(220);
   image(m_backgroundImage, 0, 0, width, height);
   image(m_tableImage, 325*m_s, 275*m_s, 850*m_s, 350*m_s);
+
+  // If we are in the middle of a hand, we can erase any warning about dealing and Calc Score
+  for (let player of m_players) for (let card of player.cards) if (card.played == true) m_warningMessage = "";
 
   if (m_warningMessage.length > 0) {
     stroke(255), fill(255), textSize(32*m_s);

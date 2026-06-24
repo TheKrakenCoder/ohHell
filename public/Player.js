@@ -14,7 +14,7 @@ class Player {
     this.cards = []; // Card objects
     // this.taskCards = []  // Card objects
     this.isDealer = false;
-    this.bids = [0];
+    this.bids = [-1];
     this.tricksTakens = [0];
   }  // xtor
 
