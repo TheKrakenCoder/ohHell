@@ -122,6 +122,16 @@ io.on(
       heartbeat();
     });
 
+    socket.on('resetServer', function(data) {
+      io.disconnectSockets();
+      m_players = [];
+      m_decks = [];
+      m_message = "&nbsp";
+      m_trickCards = [];
+      m_currentRound = 0;
+      m_lastButtonPressed = 1;
+    });
+
     //----------------------------------------------
     socket.on('disconnect', function() {
       console.log('disconnect message: Client has disconnected.  Number of clients was ' + m_players.length);
