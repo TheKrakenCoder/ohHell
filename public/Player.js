@@ -47,7 +47,11 @@ class Player {
       const played = this.cards.filter(card => card.played == true);
       // text(unplayed.length, spot.xstart*m_s, spot.ystart*m_s + 2*32*m_s);
       // taken/bid
-      text(this.tricksTakens[m_currentRound] + '/' + this.bids[m_currentRound], spot.xstart*m_s, spot.ystart*m_s + 2*32*m_s);
+      let charToShow = this.bids[m_currentRound];
+      if (charToShow == -1) charToShow = '?';
+      text(this.tricksTakens[m_currentRound] + '/' + charToShow, spot.xstart*m_s, spot.ystart*m_s + 2*32*m_s);
+      // text(this.tricksTakens[m_currentRound] + '/' + this.bids[m_currentRound], spot.xstart*m_s, spot.ystart*m_s + 2*32*m_s);
+
       // score
       let score = this.calculateScore();
       text(score, spot.xstart*m_s + 150*m_s, spot.ystart*m_s + 2*32*m_s);
@@ -177,7 +181,11 @@ class Player {
 
     // taken/bid
     stroke(0), fill(0), textSize(32*m_s);
-    text(this.tricksTakens[m_currentRound] + '/' + this.bids[m_currentRound], spot.xstart*m_s, spot.ystart*m_s + 2*32*m_s);
+    let charToShow = this.bids[m_currentRound];
+    if (charToShow == -1) charToShow = '?';
+    text(this.tricksTakens[m_currentRound] + '/' + charToShow, spot.xstart*m_s, spot.ystart*m_s + 2*32*m_s);
+    // text(this.tricksTakens[m_currentRound] + '/' + this.bids[m_currentRound], spot.xstart*m_s, spot.ystart*m_s + 2*32*m_s);
+
     // score
     let score = this.calculateScore();
     text(score, spot.xstart*m_s + 150*m_s, spot.ystart*m_s + 2*32*m_s);

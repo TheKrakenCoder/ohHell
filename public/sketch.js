@@ -30,6 +30,8 @@ let m_buttonPlayCard, m_buttonUnplayCard, m_buttonTakeTrick;
 const BUTTON_DEAL = 0, BUTTON_CALC_SCORE = 1;
 let m_lastButtonPressed = BUTTON_CALC_SCORE;
 let m_warningMessage = "";
+let m_buttonYes, m_buttonNo;
+let m_areYouSureFunction = null;
 
 // xstart, ystart are offset from the entire canvas.  xplay, yplay are offset from table (325, 275)
 let m_spots = [
@@ -179,6 +181,13 @@ function setup() {
   // let buttonBidLock = createNormalButton2("Lock Bid", 1500, 500, m_bw, m_bh);
   // buttonBidLock.mousePressed();
 
+  let buttonNewGame = createNormalButton2("New Game", 1550, 550, m_bw, m_bh);
+  buttonNewGame.mousePressed(function() {
+    m_areYouSureFunction = newGame;
+    m_buttonYes.show();
+    m_buttonNo.show();
+  });
+
   let buttonCalcScore = createNormalButton2("Calc Score", 1500, 600, m_bw, m_bh);
   buttonCalcScore.mousePressed(calcScore);
 
@@ -195,10 +204,10 @@ function setup() {
   // buttonChangeSort.mousePressed(() => m_sortLowToHigh = !m_sortLowToHigh);
   buttonChangeSort.mousePressed(() => {
     m_sortLowToHigh = !m_sortLowToHigh;
-    for (let player of m_players) {
-      if (m_sortLowToHigh) player.cards.sort((a,b) => (a.color-b.color || a.value-b.value));
-      else                 player.cards.sort((a,b) => (a.color-b.color || b.value-a.value));
-    }
+    // for (let player of m_players) {
+    //   if (m_sortLowToHigh) player.cards.sort((a,b) => (a.color-b.color || a.value-b.value));
+    //   else                 player.cards.sort((a,b) => (a.color-b.color || b.value-a.value));
+    // }
   });
 
   let buttonUntakeTrick = createNormalButton2("Untake Trick", 1500, 850, m_bw*2, m_bh);
@@ -212,6 +221,27 @@ function setup() {
   m_buttonUnplayCard.mousePressed(unplaySelectedCard);
   m_buttonTakeTrick = createNormalButton2("Take Trick", 900, 650, m_bw, m_bh);
   m_buttonTakeTrick.mousePressed(takeTrick);
+
+  ////////////////////////////////////////////
+  // Are You Sure Buttons. Hidden until needed
+  m_buttonYes = createNormalButton2("Yes", 700, 375, 75, 50);
+  m_buttonYes.mousePressed(function(){
+      // removeCardFromGamePart2();
+      if (m_areYouSureFunction) m_areYouSureFunction();
+      m_buttonYes.hide();
+      m_buttonNo.hide();
+      m_areYouSureFunction = null;
+    });
+  m_buttonNo  = createNormalButton2("No", 809, 375, 75, 50);
+  m_buttonNo.mousePressed(function(){
+      m_buttonYes.hide();
+      m_buttonNo.hide();
+      m_areYouSureFunction = null;
+    });
+  m_buttonYes.hide();
+  m_buttonNo.hide();
+
+
 
   // Below canvas
   m_messageP = createDiv('Message here');
@@ -563,10 +593,10 @@ function newHand(numCards = 7) {
     }
   }
 
-  for (let player of m_players) {
-    if (m_sortLowToHigh) player.cards.sort((a,b) => (a.color-b.color || a.value-b.value));
-    else                 player.cards.sort((a,b) => (a.color-b.color || b.value-a.value));
-  }
+  // for (let player of m_players) {
+  //   if (m_sortLowToHigh) player.cards.sort((a,b) => (a.color-b.color || a.value-b.value));
+  //   else                 player.cards.sort((a,b) => (a.color-b.color || b.value-a.value));
+  // }
 
   update();
 }
@@ -574,6 +604,15 @@ function newHand(numCards = 7) {
 function playerBid(bid) {
   m_thisPlayer.bids[m_currentRound] = bid;
   update();
+}
+
+function newGame() {
+  for (let player of m_players) {
+    player.bids = [-1];
+    player.tricksTakens = [0];
+    m_currentRound = 0;
+    update();
+  }
 }
 
 function calcScore() {
@@ -753,8 +792,30 @@ function draw() {
     text(m_warningMessage, 325*m_s, 450*m_s);
   }
 
+  if (m_thisPlayer) {
+    if (m_sortLowToHigh) m_thisPlayer.cards.sort((a,b) => (a.color-b.color || a.value-b.value));
+    else                 m_thisPlayer.cards.sort((a,b) => (a.color-b.color || b.value-a.value));
+  }
   for (p of m_players) {
     p.show();
+  }
+  if (!m_thisPlayer) return;
+
+  let totalBid = 0;
+  let anyoneNotBidYet = false;
+  let bidLen = m_thisPlayer.bids.length;
+  let numTricksTaken = 0;
+  let numCardsOnTable = 0;
+  for (let player of m_players) {
+    if (player.bids[bidLen-1] == -1) anyoneNotBidYet = true;
+    if (player.bids[bidLen-1] > -1) totalBid += player.bids[bidLen-1];
+    numTricksTaken += player.tricksTakens[bidLen-1];
+    for (card of player.cards) numCardsOnTable += card.played;
+  }
+  if (anyoneNotBidYet || (numTricksTaken == 0 && numCardsOnTable == 0)) {
+    stroke(255), fill(255), textSize(32*m_s);
+    text(m_warningMessage, 325*m_s, 450*m_s);
+    text('Bid so far: ' + totalBid, 350*m_s, 325*m_s);
   }
 
   // for (let i = 0; i < m_taskCards.length; i++) {
