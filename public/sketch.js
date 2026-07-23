@@ -704,7 +704,7 @@ function takeTrick() {
 
 function untakeTrick() {
   // make sure a trick has been taken
-  if (m_trickCards/length == 0) {
+  if (m_trickCards.length == 0) {
     m_messageP.html('You cannot untake a trick before a trick has been taken');
     update();
     return;
@@ -725,8 +725,10 @@ function untakeTrick() {
 
   m_thisPlayer.tricksTakens[m_currentRound]--;
 
-  for (let i = 0; i < m_players.length; i++) {
-    let len = m_trickCards.len-1;
+  // for (let i = 0; i < m_players.length; i++) {
+  for (let i = m_players.length-1; i >= 0; i--) {
+    let len = m_trickCards.length-1;  // reduces the length by 1 every time
+    // len = len - m_players.length + i;
     let cards = m_trickCards.splice(len, 1);
     cards[0].played = true;
     m_players[i].addCard(cards[0]);
@@ -815,7 +817,7 @@ function draw() {
   if (anyoneNotBidYet || (numTricksTaken == 0 && numCardsOnTable == 0)) {
     stroke(255), fill(255), textSize(32*m_s);
     text(m_warningMessage, 325*m_s, 450*m_s);
-    text('Bid so far: ' + totalBid, 350*m_s, 325*m_s);
+    if (m_players.length > 0 && m_players[0].cards) text('Bid so far: ' + totalBid + ' of ' + m_players[0].cards.length, 350*m_s, 325*m_s);
   }
 
   // for (let i = 0; i < m_taskCards.length; i++) {
@@ -919,6 +921,13 @@ function windowResized() {
 
     resizeCanvas(newW, newH);
   // }
+}
+
+// bidOrTricksTaken == 0 means bids[], != 0 means tricksTakens[]
+function fixIt(playerNum, bidOrTricksTaken, round, newValue) {
+  if (bidOrTricksTaken == 0) m_players[playerNum].bids[round] = newValue;
+  else                       m_players[playerNum].tricksTakens[round] = newValue;
+  update();
 }
 
 // I need a separate class that stores all the original informaiton.  I tried using the
