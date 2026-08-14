@@ -41,7 +41,7 @@ class Player {
       // rect(0, 650*m_s, 1500*m_s, 250*m_s);
       image(m_feltGoldImage, spot.xstart*m_s, spot.ystart*m_s, 700*m_s, 250*m_s);
       stroke(0), fill(0), textSize(32*m_s);
-      text(name, spot.xstart*m_s, spot.ystart*m_s + 32*m_s);
+      text(name, spot.xstart*m_s, spot.ystart*m_s + 28*m_s);
       const unplayed = this.cards.filter(card => card.played == false);
       // const comms = this.cards.filter(card => card.commStatus != 0 && card.played == false);
       const played = this.cards.filter(card => card.played == true);
@@ -49,12 +49,14 @@ class Player {
       // taken/bid
       let charToShow = this.bids[m_currentRound];
       if (charToShow == -1) charToShow = '?';
-      text(this.tricksTakens[m_currentRound] + '/' + charToShow, spot.xstart*m_s, spot.ystart*m_s + 2*32*m_s);
+      text('Bid: ' + charToShow, spot.xstart*m_s, spot.ystart*m_s + 2*28*m_s);
+      text('Taken: ' + this.tricksTakens[m_currentRound], spot.xstart*m_s, spot.ystart*m_s + 3*28*m_s);
+      // text(this.tricksTakens[m_currentRound] + '/' + charToShow, spot.xstart*m_s, spot.ystart*m_s + 2*32*m_s);
       // text(this.tricksTakens[m_currentRound] + '/' + this.bids[m_currentRound], spot.xstart*m_s, spot.ystart*m_s + 2*32*m_s);
 
       // score
       let score = this.calculateScore();
-      text(score, spot.xstart*m_s + 150*m_s, spot.ystart*m_s + 2*32*m_s);
+      text('Scr: ' + score, spot.xstart*m_s + 120*m_s, spot.ystart*m_s + 2*28*m_s);
       // player image
       if (m_playerImages[imgName]) {
         image(m_playerImages[imgName], (spot.xstart+700)*m_s - 75*m_s, spot.ystart*m_s, 75*m_s, 75*m_s);
@@ -88,9 +90,13 @@ class Player {
         }
       }
       if (m_showLastTrick && !anyCardsOnTable && m_trickCards.length > 0) {
+        let len = m_trickCards.length;
+        let plen = m_players.length;
         for (let i = 0; i < m_players.length; i++) {
-          let len = m_trickCards.length;
-          let card = m_trickCards[len-1-i];
+          // let card = m_trickCards[len-1-i];
+          stroke(255), fill(255), textSize(16);
+          text(m_players[i].name, 350*m_s + i*m_cw, 350*m_s)
+          let card = m_trickCards[len-plen+i];
           image(m_cardImages[card.index], 350*m_s + i*m_cw, 375*m_s, m_cw*0.75, m_ch*0.75);
           noStroke(); fill(155, 155, 255, 130);
           rect(350*m_s + i*m_cw, 375*m_s, m_cw*0.75, m_ch*0.75);
@@ -133,7 +139,7 @@ class Player {
     
     image(m_feltGoldImage, spot.xstart*m_s, spot.ystart*m_s, 300*m_s, 250*m_s);
     stroke(0), fill(0), textSize(32*m_s);
-    text(this.name, spot.xstart*m_s, spot.ystart*m_s + 32*m_s);
+    text(this.name, spot.xstart*m_s, spot.ystart*m_s + 28*m_s);
 
     // player image
     if (m_playerImages[imgName]) {
@@ -183,12 +189,14 @@ class Player {
     stroke(0), fill(0), textSize(32*m_s);
     let charToShow = this.bids[m_currentRound];
     if (charToShow == -1) charToShow = '?';
-    text(this.tricksTakens[m_currentRound] + '/' + charToShow, spot.xstart*m_s, spot.ystart*m_s + 2*32*m_s);
+    // text(this.tricksTakens[m_currentRound] + '/' + charToShow, spot.xstart*m_s, spot.ystart*m_s + 2*32*m_s);
+    text('Bid: ' + charToShow, spot.xstart*m_s, spot.ystart*m_s + 2*28*m_s);
+    text('Taken: ' + this.tricksTakens[m_currentRound], spot.xstart*m_s, spot.ystart*m_s + 3*28*m_s);
     // text(this.tricksTakens[m_currentRound] + '/' + this.bids[m_currentRound], spot.xstart*m_s, spot.ystart*m_s + 2*32*m_s);
 
     // score
     let score = this.calculateScore();
-    text(score, spot.xstart*m_s + 150*m_s, spot.ystart*m_s + 2*32*m_s);
+    text('Scr: ' + score, spot.xstart*m_s + 120*m_s, spot.ystart*m_s + 2*28*m_s);
 
   }
 
