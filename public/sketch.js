@@ -11,6 +11,7 @@ let m_s = 1.0;
 let m_cardBackImage, m_cardImages= [], m_feltGoldImage;
 let m_backgroundImage, m_tableImage;
 let m_playerImages = [];
+let m_brownStudyImage;
 let m_playCardsUnshuffled = [];  // Card objects
 let m_playDeck;  // Deck object
 let m_decks = [];  // Decks
@@ -26,7 +27,7 @@ let m_currentRound = 0;
 let m_showLastTrick = false;
 let m_showScorecard = false;
 let m_sortLowToHigh = true;
-let m_buttonPlayCard, m_buttonUnplayCard, m_buttonTakeTrick;
+let m_buttonPlayCard, m_buttonUnplayCard, m_buttonTakeTrick, m_buttonBrownStudy;
 const BUTTON_DEAL = 0, BUTTON_CALC_SCORE = 1;
 let m_lastButtonPressed = BUTTON_CALC_SCORE;
 let m_warningMessage = "";
@@ -93,6 +94,9 @@ function preload() {
   m_playerImages['steffanie'] = loadImage('Assets/picSteffanie.jpg');
   m_playerImages['steve'] = loadImage('Assets/picSteve.jpg');
   m_playerImages['steven'] = loadImage('Assets/picSteven.jpg');
+
+  m_brownStudyImage = loadImage('Assets/brownStudy.gif');
+
 }
 
 function setup() {
@@ -214,13 +218,16 @@ function setup() {
   buttonUntakeTrick.mousePressed(untakeTrick);
 
   // this player buttons
-  m_buttonPlayCard = createNormalButton2("Play Card", 700, 650, m_bw, m_bh);
+  m_buttonPlayCard = createNormalButton2("Play Card", 650, 650, m_bw, m_bh);
   m_buttonPlayCard.mousePressed(playSelectedCard);
-  m_buttonUnplayCard = createNormalButton2("Unplay Card", 800, 650, m_bw, m_bh);
+  m_buttonUnplayCard = createNormalButton2("Unplay Card", 750, 650, m_bw, m_bh);
   m_buttonUnplayCard.style('padding', '5px 0px');
   m_buttonUnplayCard.mousePressed(unplaySelectedCard);
-  m_buttonTakeTrick = createNormalButton2("Take Trick", 900, 650, m_bw, m_bh);
+  m_buttonTakeTrick = createNormalButton2("Take Trick", 850, 650, m_bw, m_bh);
   m_buttonTakeTrick.mousePressed(takeTrick);
+  m_buttonBrownStudy = createNormalButton2("Brown Study", 950, 650, m_bw, m_bh);
+  m_buttonBrownStudy.mousePressed(brownStudy);
+  m_buttonBrownStudy.style('padding', '5px 0px');
 
   ////////////////////////////////////////////
   // Are You Sure Buttons. Hidden until needed
@@ -603,6 +610,7 @@ function newHand(numCards = 7) {
 
 function playerBid(bid) {
   m_thisPlayer.bids[m_currentRound] = bid;
+  m_thisPlayer.brownStudy = false;
   update();
 }
 
@@ -700,6 +708,11 @@ function takeTrick() {
   m_thisPlayer.tricksTakens[m_currentRound]++;
   update();
 
+}
+
+function brownStudy() {
+  m_thisPlayer.brownStudy = !m_thisPlayer.brownStudy;
+  update();
 }
 
 function untakeTrick() {
