@@ -666,6 +666,7 @@ function playSelectedCard() {
     if (card.selected) {
       card.played = true;
       card.selected = false;
+      m_thisPlayer.brownStudy = false;
       update();
       break;
     }
