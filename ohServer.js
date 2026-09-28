@@ -25,6 +25,7 @@ let m_message = "&nbsp";
 let m_trickCards = [];
 let m_currentRound = 0;
 let m_lastButtonPressed = 1;
+let m_howManyDealt = 0;
 
 const express = require('express');
 const app = express();
@@ -59,6 +60,7 @@ function heartbeat() {
     trickCards:   m_trickCards,
     currentRound: m_currentRound,
     lastButtonPressed: m_lastButtonPressed,
+    howManyDealt: m_howManyDealt,
   };
   // emit to all players
   io.sockets.emit('heartbeat', data);
@@ -116,6 +118,7 @@ io.on(
       m_trickCards = data.trickCards;
       m_currentRound = data.currentRound;
       m_lastButtonPressed = data.lastButtonPressed;
+      m_howManyDealt = data.howManyDealt;
       // m_firewood = data.firewood;
       // m_isOpenSeason = data.isOpenSeason;
       // m_difficulty = data.difficulty;
@@ -130,6 +133,7 @@ io.on(
       m_trickCards = [];
       m_currentRound = 0;
       m_lastButtonPressed = 1;
+      m_howManyDealt = 0;
     });
 
     //----------------------------------------------
@@ -153,6 +157,7 @@ io.on(
         if (m_trickCards)  m_trickCards = [];
         m_currentRound = 0;
         m_lastButtonPressed = 1;
+        m_howManyDealt = 0;
         // m_difficulty = 2;
       }
     });
