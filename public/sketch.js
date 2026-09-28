@@ -30,6 +30,7 @@ let m_sortLowToHigh = true;
 let m_buttonPlayCard, m_buttonUnplayCard, m_buttonTakeTrick, m_buttonBrownStudy;
 const BUTTON_DEAL = 0, BUTTON_CALC_SCORE = 1;
 let m_lastButtonPressed = BUTTON_CALC_SCORE;
+let m_howManyDealt = 0;
 let m_warningMessage = "";
 let m_buttonYes, m_buttonNo;
 let m_areYouSureFunction = null;
@@ -297,6 +298,7 @@ function setup() {
       createTrickCardsFromServerData(data.trickCards);
       m_currentRound = data.currentRound;
       m_lastButtonPressed = data.lastButtonPressed;
+      m_howManyDealt = data.howManyDealt;
       // createTaskCardsFromServerData(data.taskCards);
       // m_distress = data.distress
       // m_firewood = data.firewood;
@@ -457,6 +459,7 @@ function update() {
       trickCards: m_trickCards,
       currentRound: m_currentRound,
       lastButtonPressed: m_lastButtonPressed,
+      howManyDealt: m_howManyDealt,
       // shipTokens: m_shipTokens,
       // numSandLeft: m_numSandLeft,
     };
@@ -559,7 +562,7 @@ function mousePressed() {
 
 function newHand(numCards = 7) {
   if (m_lastButtonPressed == BUTTON_DEAL) {
-    m_warningMessage = "You may have forgotten to Calc Score.\nIf not, press Deal again."
+    m_warningMessage = m_thisPlayer.name + ", someone may have forgotten to Calc Score. ASK AROUND!\nIf not, press Deal again."
     m_lastButtonPressed = BUTTON_CALC_SCORE;
     // update();
     return;
@@ -584,7 +587,7 @@ function newHand(numCards = 7) {
   console.log('numCards = ' , numCards);
   
   if (m_players.length * numCards > 52) {
-    m_messageP.html('Not enough cards in dec.');
+    m_messageP.html('Not enough cards in deck.');
     update();
     return;
   }
@@ -599,6 +602,8 @@ function newHand(numCards = 7) {
       m_players[player].addCard(crd);
     }
   }
+
+  m_howManyDealt = numCards;
 
   // for (let player of m_players) {
   //   if (m_sortLowToHigh) player.cards.sort((a,b) => (a.color-b.color || a.value-b.value));
@@ -618,6 +623,7 @@ function newGame() {
   for (let player of m_players) {
     player.bids = [-1];
     player.tricksTakens = [0];
+    player.reset();
     m_currentRound = 0;
     update();
   }
@@ -831,8 +837,10 @@ function draw() {
   if (anyoneNotBidYet || (numTricksTaken == 0 && numCardsOnTable == 0)) {
     stroke(255), fill(255), textSize(32*m_s);
     text(m_warningMessage, 325*m_s, 450*m_s);
-    if (m_players.length > 0 && m_players[0].cards) text('Bid so far: ' + totalBid + ' of ' + m_players[0].cards.length, 350*m_s, 325*m_s);
+    // if (m_players.length > 0 && m_players[0].cards) text('Bid so far: ' + totalBid + ' of ' + m_players[0].cards.length, 350*m_s, 325*m_s);
   }
+  stroke(0), fill(0), textSize(32*m_s);
+  if (m_players.length > 0 && m_players[0].cards) text('Bid: ' + totalBid + ' of ' + m_players[0].cards.length, 10*m_s, 48*m_s);
 
   // for (let i = 0; i < m_taskCards.length; i++) {
   //   let x = 500*m_s + (i%5)*m_cw;
@@ -941,6 +949,30 @@ function windowResized() {
 function fixIt(playerNum, bidOrTricksTaken, round, newValue) {
   if (bidOrTricksTaken == 0) m_players[playerNum].bids[round] = newValue;
   else                       m_players[playerNum].tricksTakens[round] = newValue;
+  update();
+}
+function setPlayerScore(playerNum, score) {
+  let numRounds = m_players[0].bids.length-1;  // extra -1 because we the length is always 1 ahead
+  console.log('numRounds = ' , numRounds);
+  
+  let runningScore = (numRounds-1) * 5;
+  console.log('runningScore = ' , runningScore);
+  
+  // This gives 5 points for all the rounds except the last one
+  for (let i = 0; i < numRounds-1; i++) {
+    m_players[playerNum].bids[i] = 0;
+    m_players[playerNum].tricksTakens[i] = 0;
+  }
+  let lastRoundScore = score - runningScore;
+  console.log('lastRoundScore = ' , lastRoundScore);
+  
+  if (lastRoundScore >= 0) {
+    m_players[playerNum].bids[numRounds-1] = lastRoundScore-5;  // -5 because youget a base 5 points
+    m_players[playerNum].tricksTakens[numRounds-1] = lastRoundScore-5;
+  } else {
+    m_players[playerNum].bids[numRounds-1] = 0;
+    m_players[playerNum].tricksTakens[numRounds-1] = lastRoundScore;
+  }
   update();
 }
 

@@ -128,10 +128,12 @@ class Player {
         m_decks[0].cards[m_decks[0].cards.length-1].x = x;
         m_decks[0].cards[m_decks[0].cards.length-1].y = y;
         m_decks[0].cards[m_decks[0].cards.length-1].show();
-        fill(0, 255, 0), stroke(0, 255, 0), textSize(32*m_s);
+        fill(0, 255, 0), stroke(0, 0, 255), textSize(32*m_s);
         push();
         textAlign(CENTER, CENTER);
         text("trump", x+m_cw/2, y + m_ch/2);
+        text("("+m_howManyDealt+")", x+m_cw/2, y + m_ch/2+32*m_s);
+        // text("("+(tricksTakenSoFarThisRound+this.cards.length)+")", x+m_cw/2, y + m_ch/2+32*m_s);
         pop();
       }
 
@@ -167,10 +169,11 @@ class Player {
       m_decks[0].cards[m_decks[0].cards.length-1].x = x;
       m_decks[0].cards[m_decks[0].cards.length-1].y = yy;
       m_decks[0].cards[m_decks[0].cards.length-1].show();
-      fill(0, 255, 0), stroke(0, 255, 0), textSize(32*m_s);
+      fill(0, 255, 0), stroke(0, 0, 255), textSize(32*m_s);
       push();
       textAlign(CENTER, CENTER);
       text("trump", x+m_cw/2, yy + m_ch/2);
+      text("("+m_howManyDealt+")", x+m_cw/2, yy + m_ch/2+32*m_s);
       pop();
       // move the normal card over
       xx += 50*m_s;
