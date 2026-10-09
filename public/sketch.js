@@ -840,7 +840,8 @@ function draw() {
     // if (m_players.length > 0 && m_players[0].cards) text('Bid so far: ' + totalBid + ' of ' + m_players[0].cards.length, 350*m_s, 325*m_s);
   }
   stroke(0), fill(0), textSize(32*m_s);
-  if (m_players.length > 0 && m_players[0].cards) text('Bid: ' + totalBid + ' of ' + m_players[0].cards.length, 10*m_s, 48*m_s);
+  // if (m_players.length > 0 && m_players[0].cards) text('Bid: ' + totalBid + ' of ' + m_players[0].cards.length, 10*m_s, 48*m_s);
+  if (m_players.length > 0 && m_players[0].cards) text('Bid: ' + totalBid + ' of ' + m_howManyDealt, 10*m_s, 48*m_s);
 
   // for (let i = 0; i < m_taskCards.length; i++) {
   //   let x = 500*m_s + (i%5)*m_cw;
