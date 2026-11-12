@@ -22,6 +22,7 @@ let m_cw = 100, m_ch = 150;
 let m_bw = 50, m_bh = 50;
 let m_allButtons = [];
 let m_trickCards = [];  // Cards
+let m_scores = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];  // so we can reset them if someone drops accidentally
 let m_standalone = false;
 let m_currentRound = 0;
 let m_showLastTrick = false;
@@ -34,6 +35,10 @@ let m_howManyDealt = 0;
 let m_warningMessage = "";
 let m_buttonYes, m_buttonNo;
 let m_areYouSureFunction = null;
+let m_savedData, m_saveButton, m_loadButton, m_parseButton, m_restoreButton, m_jsonInput, m_hideSaveButton;
+let m_saveButton2;
+let m_autoSave = false;
+let m_numCardsOnTableOld = 0;
 
 // xstart, ystart are offset from the entire canvas.  xplay, yplay are offset from table (325, 275)
 let m_spots = [
@@ -218,6 +223,11 @@ function setup() {
   let buttonUntakeTrick = createNormalButton2("Untake Trick", 1500, 850, m_bw*2, m_bh);
   buttonUntakeTrick.mousePressed(untakeTrick);
 
+  m_saveButton2 = createNormalButton2("Save Game", 1500, 800, m_bw*2, m_bh);
+  m_saveButton2.mousePressed(() => saveGame());
+  m_saveButton2.hide();
+
+
   // this player buttons
   m_buttonPlayCard = createNormalButton2("Play Card", 650, 650, m_bw, m_bh);
   m_buttonPlayCard.mousePressed(playSelectedCard);
@@ -290,29 +300,93 @@ function setup() {
     // heartbeat message //
     // data: object containing a Player array and a Table
     m_socket.on('heartbeat', function(data) {
-      if (!m_initialPlayer) return;
-      console.log('heartbeat message: We got ' , data);
-      createPlayersFromServerData(data.players);
-      setMessageFromServerData(data.message);
-      createDecksFromServerData(data.decks);
-      createTrickCardsFromServerData(data.trickCards);
-      m_currentRound = data.currentRound;
-      m_lastButtonPressed = data.lastButtonPressed;
-      m_howManyDealt = data.howManyDealt;
-      // createTaskCardsFromServerData(data.taskCards);
-      // m_distress = data.distress
-      // m_firewood = data.firewood;
-      // m_isOpenSeason = data.isOpenSeason;
-      // m_difficulty = data.difficulty;
+      restoreData(data, false);
+      // if (!m_initialPlayer) return;
+      // console.log('heartbeat message: We got ' , data);
+      // createPlayersFromServerData(data.players);
+      // setMessageFromServerData(data.message);
+      // createDecksFromServerData(data.decks);
+      // createTrickCardsFromServerData(data.trickCards);
+      // m_currentRound = data.currentRound;
+      // m_lastButtonPressed = data.lastButtonPressed;
+      // m_howManyDealt = data.howManyDealt;
+      // m_scores = data.scores;
 
       // // Note I wasn't able to pass in m_discards into the function here and fill it in 
       // // using the function argument.  I had to directly specify m_discards in the function.
       // // This is probably because I keep changing what m_discards is.
       // // createCardArrayFromServerData(data.discards, m_discards);
     });
- }
+  }
+
+      // Buttons dealing with save and restore.  These are normally hidden.  They are below the canvas.
+  m_saveButton = createButton("1 Save");
+  m_saveButton.mousePressed(() => saveGame());
+  m_loadButton = createButton("2a Read");
+  m_loadButton.mousePressed(() => readSavedGame());
+  m_parseButton = createButton("2b Parse");
+  m_parseButton.mousePressed(() => parseSavedGame());
+  m_restoreButton = createButton("3 Load");
+  m_restoreButton.mousePressed(() => restoreSavedGame());
+  createDiv();
+  m_jsonInput = createInput("The number of players in the saved game must match the number of players currently in the game.");
+  m_jsonInput.style('width',  '900px');
+  m_jsonInput.style('height', '25px');
+
+  m_hideSaveButton = createButton('Hide');
+  m_hideSaveButton.mousePressed(function(){
+      m_saveButton.hide(); m_loadButton.hide(); m_parseButton.hide(); m_restoreButton.hide(); m_jsonInput.hide(); m_hideSaveButton.hide();
+    });
+  m_saveButton.hide(); m_loadButton.hide(); m_parseButton.hide(); m_restoreButton.hide(); m_jsonInput.hide(); m_hideSaveButton.hide();
 
 }
+
+////////////////////////////////////////////////////////////
+// SAVE and RESTORE functions
+
+// called from heartbeat and from restoreSavedGame
+function restoreData(data, isSavedGame = false) {
+  if (!m_initialPlayer) return;
+  console.log('heartbeat message: We got ' , data);
+  createPlayersFromServerData(data.players, isSavedGame);
+  setMessageFromServerData(data.message);
+  createDecksFromServerData(data.decks);
+  createTrickCardsFromServerData(data.trickCards);
+  m_currentRound = data.currentRound;
+  m_lastButtonPressed = data.lastButtonPressed;
+  m_howManyDealt = data.howManyDealt;
+  m_scores = data.scores;
+  
+  // if (!m_initialPlayer) return;
+  // console.log('heartbeat message: We got ' , data);
+  // createPlayersFromServerData(data.players, isSavedGame);
+  // createDecksFromServerData(data.decks);
+  // createFigureTokensFromServerData(data.figureTokens);
+  // m_floodMeterValue = data.floodMeterValue;
+}
+
+function saveGame() {
+  update(true);
+}
+
+function readSavedGame() {
+  m_savedData = loadJSON('ohHell.json');
+}
+function parseSavedGame() {
+  m_savedData = JSON.parse(m_jsonInput.value());
+}
+function restoreSavedGame() {
+  console.log('m_savedData = ' , m_savedData);
+  console.log('m_savedData.players = ' , m_savedData.players);
+  
+  restoreData(m_savedData, true);
+  update();
+}
+function showSaveButtons() {
+  m_saveButton.show(); m_loadButton.show(); m_parseButton.show(); m_restoreButton.show(); m_jsonInput.show(); m_hideSaveButton.show();
+  m_saveButton2.show();
+}
+
 
 ////////////////////////////////////////////
 // NETWORK FUNCTIONS
@@ -367,14 +441,18 @@ function initPlayerToServer() {
 
 // called when we get a heartbeat from the server
 // data: array of Player objects
-function createPlayersFromServerData(data) {
+function createPlayersFromServerData(data, isSavedGame) {
   console.log('player data = ' , data);
   
   let playersTemp = []; 
   let icnt = 0;
-  for (p of data) {
+  // for (p of data) {
+  for (let play = 0; play < data.length; play++) {
+    let p = data[play];
     let player = new Player(p.seatPos, p.name);
-    player.copyFromServerData(p);
+    // player.copyFromServerData(p);
+    if (!isSavedGame) player.copyFromServerData(p, -1);
+    else              player.copyFromServerData(p, play);
     player.seatPos = icnt++;   // this makes sure we always start at 0 and count up if someone drops
     playersTemp.push(player);
   }
@@ -449,8 +527,9 @@ function setGlobalsFromPlayerInfo() {
 }
 
 // emit all the players and the table to the server
-function update() {
+function update(isSavedGame = false) {
   if (m_initialized && m_socket) {
+    for (let i = 0; i < m_players.length; i++) m_scores[i] = m_players[i].calculateScore();
     let msg = m_messageP.html();
     let data = {
       players: m_players,
@@ -460,10 +539,15 @@ function update() {
       currentRound: m_currentRound,
       lastButtonPressed: m_lastButtonPressed,
       howManyDealt: m_howManyDealt,
+      scores: m_scores,
       // shipTokens: m_shipTokens,
       // numSandLeft: m_numSandLeft,
     };
-    m_socket.emit('update', data);
+    if (!isSavedGame) {
+      m_socket.emit('update', data);
+    } else {
+      saveJSON(data, 'ohHell.json', true)
+    }
   }
 }
 
@@ -854,6 +938,14 @@ function draw() {
 
   // }
 
+  // If we had cards on the table and we don't anymore (likely due to someone taking a trick) then save the game state
+  if (m_autoSave) {
+    if (numCardsOnTable == 0 && m_numCardsOnTableOld > 0) {
+      saveGame();
+    }
+  }
+  m_numCardsOnTableOld = numCardsOnTable;
+
   if (m_showScorecard) showScorecard();
   else {
     m_buttonPlayCard.show();
@@ -952,8 +1044,16 @@ function fixIt(playerNum, bidOrTricksTaken, round, newValue) {
   else                       m_players[playerNum].tricksTakens[round] = newValue;
   update();
 }
-function setPlayerScore(playerNum, score) {
-  let numRounds = m_players[0].bids.length-1;  // extra -1 because we the length is always 1 ahead
+function setPlayerScore(playerName, score) {
+  // Find the index of the player whose score you want to change
+  const playerNum = m_players.findIndex(user => user.name.toLowerCase() === playerName.toLowerCase());
+  console.log('playerNum = ' , playerNum);
+
+  // make sure the player's arrays are the correct length
+  let otherPlayer = 0;
+  if (playerNum == 0) otherPlayer = 1;
+
+  let numRounds = m_players[otherPlayer].bids.length-1;  // extra -1 because we the length is always 1 ahead
   console.log('numRounds = ' , numRounds);
   
   let runningScore = (numRounds-1) * 5;
@@ -974,7 +1074,29 @@ function setPlayerScore(playerNum, score) {
     m_players[playerNum].bids[numRounds-1] = 0;
     m_players[playerNum].tricksTakens[numRounds-1] = lastRoundScore;
   }
+
+  if (m_players[playerNum].bids.length < m_players[otherPlayer].bids.length) {
+    m_players[playerNum].bids.push(-1);
+    m_players[playerNum].tricksTakens.push(0);
+  }
   update();
+}
+
+function setPlayerPos(playerName, newSeat) {
+  // Find the index of the object you want to move
+  const index = m_players.findIndex(user => user.name.toLowerCase() === playerName.toLowerCase());
+  console.log('index = ' , index);
+
+  // If the item exists, remove exactly 1 item at that index and add it to the correct index
+  if (index !== -1) {
+    let plrs = m_players.splice(index, 1);
+    if (plrs.length > 0) {
+      m_players.splice(newSeat, 0, plrs[0]);
+      for (let i = 0; i < m_players.length; i++) m_players[i].seatPos = i;
+      update();
+    }
+  }
+
 }
 
 // I need a separate class that stores all the original informaiton.  I tried using the
