@@ -19,6 +19,7 @@ const MAX_PLAYERS = 7;
 // Seat order really doesn't mean much in this game.  In createPlayersFromServerData() we
 // just set seatPos to the m_players index.
 let m_seatOrder = [0, 1, 2, 3, 4, 5, 6];
+let m_scores = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];  // so we can reset them if someone drops accidentally
 let m_players = [];
 let m_decks = [];
 let m_message = "&nbsp";
@@ -61,6 +62,7 @@ function heartbeat() {
     currentRound: m_currentRound,
     lastButtonPressed: m_lastButtonPressed,
     howManyDealt: m_howManyDealt,
+    scores: m_scores,
   };
   // emit to all players
   io.sockets.emit('heartbeat', data);
@@ -119,6 +121,7 @@ io.on(
       m_currentRound = data.currentRound;
       m_lastButtonPressed = data.lastButtonPressed;
       m_howManyDealt = data.howManyDealt;
+      m_scores = data.scores;
       // m_firewood = data.firewood;
       // m_isOpenSeason = data.isOpenSeason;
       // m_difficulty = data.difficulty;
@@ -134,6 +137,7 @@ io.on(
       m_currentRound = 0;
       m_lastButtonPressed = 1;
       m_howManyDealt = 0;
+      m_scores = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     });
 
     //----------------------------------------------
@@ -155,6 +159,7 @@ io.on(
         if (m_decks)  m_decks = [];
         if (m_message) m_message = "&nbsp";
         if (m_trickCards)  m_trickCards = [];
+        m_scores = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         m_currentRound = 0;
         m_lastButtonPressed = 1;
         m_howManyDealt = 0;
